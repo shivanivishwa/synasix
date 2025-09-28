@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { User } from '../App';
 import { ArrowLeft, Thermometer, Droplets, Sprout, Zap, MapPin } from 'lucide-react';
 import { toast } from "sonner@2.0.3";
@@ -38,6 +39,7 @@ interface FertilizerSuggestion {
 
 export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
   const [temperature, setTemperature] = useState('');
+  const [soilType, setSoilType] = useState('');
   const [npkValues, setNpkValues] = useState<NPKValues>({ nitrogen: 0, phosphorus: 0, potassium: 0 });
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<{
@@ -68,6 +70,11 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
       return;
     }
 
+    if (!soilType) {
+      toast.error("Please select the soil type");
+      return;
+    }
+
     if (npkValues.nitrogen === 0 && npkValues.phosphorus === 0 && npkValues.potassium === 0) {
       toast.error("Please enter NPK values");
       return;
@@ -84,12 +91,23 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
       const cropSuggestions: CropSuggestion[] = [];
       const fertilizerSuggestions: FertilizerSuggestion[] = [];
 
-      // Temperature-based crop recommendations
+      // Temperature and soil type-based crop recommendations
       if (temp >= 25 && temp <= 35) {
+        let suitability = 85;
+        let reason = "Optimal temperature for rice cultivation";
+        
+        if (soilType === 'clayey' || soilType === 'black') {
+          suitability = 95;
+          reason = `Optimal temperature and ${soilType} soil excellent for rice cultivation with high water retention`;
+        } else if (soilType === 'loamy') {
+          suitability = 90;
+          reason = "Optimal temperature and loamy soil good for rice cultivation";
+        }
+        
         cropSuggestions.push({
           name: "Rice",
-          suitability: 95,
-          reason: "Optimal temperature and high nitrogen content suitable for rice cultivation",
+          suitability,
+          reason,
           growthPeriod: "120-140 days",
           expectedYield: "4-6 tons/hectare",
           waterRequirement: "High (1200-1500mm)"
@@ -97,10 +115,21 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
       }
 
       if (temp >= 20 && temp <= 30) {
+        let suitability = 80;
+        let reason = "Good temperature range for wheat";
+        
+        if (soilType === 'loamy' || soilType === 'black') {
+          suitability = 90;
+          reason = `Good temperature range and ${soilType} soil ideal for wheat cultivation`;
+        } else if (soilType === 'clayey') {
+          suitability = 85;
+          reason = "Good temperature and clayey soil suitable for wheat";
+        }
+        
         cropSuggestions.push({
           name: "Wheat",
-          suitability: 88,
-          reason: "Good temperature range with adequate phosphorus levels",
+          suitability,
+          reason,
           growthPeriod: "120-150 days",
           expectedYield: "3-4 tons/hectare",
           waterRequirement: "Medium (450-650mm)"
@@ -108,10 +137,21 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
       }
 
       if (temp >= 25 && temp <= 40 && potassium > 40) {
+        let suitability = 75;
+        let reason = "High potassium and warm temperature for cotton";
+        
+        if (soilType === 'black' || soilType === 'red') {
+          suitability = 90;
+          reason = `High potassium, warm temperature and ${soilType} soil excellent for cotton cultivation`;
+        } else if (soilType === 'loamy') {
+          suitability = 85;
+          reason = "High potassium, warm temperature and loamy soil good for cotton";
+        }
+        
         cropSuggestions.push({
           name: "Cotton",
-          suitability: 82,
-          reason: "High potassium content and warm temperature ideal for cotton",
+          suitability,
+          reason,
           growthPeriod: "160-200 days",
           expectedYield: "2-3 tons/hectare",
           waterRequirement: "Medium (700-1200mm)"
@@ -119,13 +159,47 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
       }
 
       if (temp >= 15 && temp <= 25) {
+        let suitability = 70;
+        let reason = "Cool temperature suitable for potato";
+        
+        if (soilType === 'loamy' || soilType === 'sandy') {
+          suitability = 85;
+          reason = `Cool temperature and ${soilType} soil excellent for potato cultivation with good drainage`;
+        } else if (soilType === 'red') {
+          suitability = 80;
+          reason = "Cool temperature and red soil good for potato cultivation";
+        }
+        
         cropSuggestions.push({
           name: "Potato",
-          suitability: 78,
-          reason: "Cool temperature with balanced NPK suitable for tuber development",
+          suitability,
+          reason,
           growthPeriod: "90-120 days",
           expectedYield: "20-25 tons/hectare",
           waterRequirement: "Medium (500-700mm)"
+        });
+      }
+
+      // Add soil-specific crops
+      if (soilType === 'sandy' && temp >= 20 && temp <= 35) {
+        cropSuggestions.push({
+          name: "Groundnut",
+          suitability: 88,
+          reason: "Sandy soil with good drainage perfect for groundnut cultivation",
+          growthPeriod: "120-130 days",
+          expectedYield: "2-3 tons/hectare",
+          waterRequirement: "Medium (500-700mm)"
+        });
+      }
+
+      if (soilType === 'red' && temp >= 20 && temp <= 30) {
+        cropSuggestions.push({
+          name: "Millets",
+          suitability: 85,
+          reason: "Red soil with good mineral content ideal for drought-resistant millets",
+          growthPeriod: "75-100 days",
+          expectedYield: "1-2 tons/hectare",
+          waterRequirement: "Low (300-500mm)"
         });
       }
 
@@ -218,7 +292,7 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
               <Thermometer className="h-5 w-5" />
               Current Conditions
             </CardTitle>
-            <CardDescription>Enter current temperature and soil NPK values</CardDescription>
+            <CardDescription>Enter current temperature, soil type and soil NPK values</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -232,6 +306,25 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
                 value={temperature}
                 onChange={(e) => setTemperature(e.target.value)}
               />
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Droplets className="h-4 w-4" />
+                Soil Type
+              </Label>
+              <Select value={soilType} onValueChange={setSoilType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select soil type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="loamy">Loamy Soil</SelectItem>
+                  <SelectItem value="clayey">Clayey Soil</SelectItem>
+                  <SelectItem value="black">Black Soil</SelectItem>
+                  <SelectItem value="sandy">Sandy Soil</SelectItem>
+                  <SelectItem value="red">Red Soil</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -298,7 +391,7 @@ export function CropRecommendation({ user, onBack }: CropRecommendationProps) {
                 <Sprout className="h-5 w-5" />
                 Recommended Crops
               </CardTitle>
-              <CardDescription>Based on current temperature and soil conditions</CardDescription>
+              <CardDescription>Based on current temperature, soil type and soil conditions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

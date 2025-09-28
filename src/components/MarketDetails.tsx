@@ -160,7 +160,7 @@ export function MarketDetails({ user, onBack }: MarketDetailsProps) {
                           </div>
                           <div className={`flex items-center text-sm ${item.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {item.change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {Math.abs(item.change)}%
+                            {Math.abs(item.change).toFixed(2)}%
                           </div>
                         </div>
                       </div>

@@ -234,7 +234,7 @@ export function HomePage({ user, onNavigate, isVoiceEnabled, onToggleVoice }: Ho
                   <p className="text-sm opacity-90">{item.crop}</p>
                   <p className="font-semibold">₹{item.price}</p>
                   <p className={`text-xs ${item.change > 0 ? 'text-green-200' : 'text-red-200'}`}>
-                    {item.change > 0 ? '+' : ''}{item.change}%
+                    {item.change > 0 ? '+' : ''}{item.change.toFixed(2)}%
                   </p>
                 </div>
               ))}
